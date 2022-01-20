@@ -37,6 +37,15 @@ class action_plugin_codemirror extends DokuWiki_Action_Plugin {
         $acronyms = array_keys(getAcronyms());
         usort($acronyms, array($this,'compare'));
 
+        $plugin_list = array();
+
+        foreach (plugin_list('syntax') as $plugin) {
+            $plugin = explode("_", $plugin)[0];
+            if (!in_array($plugin, $plugin_list)) {
+                $plugin_list[] = $plugin;
+            }
+        }
+
         $jsinfo = array(
             'acronyms' => $acronyms,
             'baseURL' => $base_url,
@@ -50,6 +59,7 @@ class action_plugin_codemirror extends DokuWiki_Action_Plugin {
             'version' => $version,
             'usenativescroll' => $this->getConf('usenativescroll'),
             'autoheight' => $this->getConf('autoheight'),
+            'plugins' => $plugin_list
         );
 
         $event->data['link'][] = array(
