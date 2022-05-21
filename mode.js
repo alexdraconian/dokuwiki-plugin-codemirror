@@ -848,15 +848,27 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
 
     }
 
-    /* Plugin color */
+    /* Plugin fontsize2 */
 
-    if (parserConfig.plugins.indexOf('color') !== -1) {
-        addSyntaxMode(158, {
+    if (parserConfig.plugins.indexOf('fontsize2') !== -1) {
+        addSyntaxMode(91, {
             name: 'fontsize2',
             type: 'formatting',
             allowedTypes: ['formatting', 'substition', 'disabled'],
             entries: [{match: /<fs(.*?)>/, style: 'tag'}],
             patterns: [{match: '</fs>', exit: true, style: 'tag'}]
+        });
+    }
+
+    /* Plugin color */
+
+    if (parserConfig.plugins.indexOf('color') !== -1) {
+        addSyntaxMode(158, {
+            name: 'color',
+            type: 'formatting',
+            allowedTypes: ['formatting', 'substition', 'disabled'],
+            entries: [{match: /<color(.*?)>/, style: 'tag'}],
+            patterns: [{match: '</color>', exit: true, style: 'tag'}]
         });
     }
 
@@ -1028,6 +1040,66 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             }
         });
     }
+
+    /* Plugin Mathjax (Customized setting) */
+
+    if (parserConfig.plugins.indexOf('mathjax') !== -1) {
+
+        addSyntaxMode(65, {
+            name: 'mathjax_inline',
+            type: 'protected',
+            entries: [{match: '<math>', style: 'tag', lang: 'latex'}],
+            patterns: [{match: '</math>', style: 'tag', exit: true}]
+        });
+
+        addSyntaxMode(65, {
+            name: 'mathjax_block',
+            type: 'protected',
+            entries: [{match: '<MATH>', style: 'tag', lang: 'latex'}],
+            patterns: [{match: '</MATH>', style: 'tag', exit: true}]
+        });
+
+    }
+
+    /* Plugin numberedheadings
+
+    if (parserConfig.plugins.indexOf('numberedheadings') !== -1) {
+
+        addSyntaxMode(45, {
+            name: 'numberedheadings',
+            type: 'baseonly',
+            entries: [{match: /={2,} +(?=-)/, sol: true, style: 'def'}],
+            token: function(stream, state) {
+                var style;
+                if (stream.match(/^={2,}/)) {
+                    state.current = state.stack.pop();
+                    style = 'def';
+                } else if (stream.match('-')) {
+                    style = 'meta';
+                } else if (stream.match(/^#[0-9]+/)) {
+                    style = 'keyword';
+                } else if (stream.match(/\[.+?\]/)) {
+                    style = 'string';
+                } else {
+                    stream.next();
+                    style = 'def';
+                }
+                return tokenStyles(state, style);
+            }
+        });
+
+        addSyntaxMode(45, {
+            name: 'numberedheadings_macro',
+            type: 'baseonly',
+            entries: [{
+                match: /~~HEADLINE NUMBERING FIRST LEVEL = [1-5]~~/,
+                style: 'meta', exit: true}
+            ]
+        });
+
+    }
+    
+    */
 
     /* Return dokuwiki mode */
 
