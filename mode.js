@@ -639,7 +639,8 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 }],
                 patterns: [{
                     match: '</' + _bootswrapper_tags[i] + '>',
-                    style: 'tag'
+                    style: 'tag',
+                    exit: true
                 }]
             });
         }
@@ -1098,7 +1099,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         });
 
     }
-    
+
     */
 
     /* Return dokuwiki mode */
@@ -1108,6 +1109,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             return Number(a) - Number(b);
         }
     );
+
     for (i=0; i < sorted_key.length; i += 1) {
         dokuModes = dokuModes.concat(syntaxModes[sorted_key[i]]);
     }
