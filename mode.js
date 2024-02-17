@@ -935,7 +935,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                           'mdi', 'fl', 'fugue', 'oxygen', 'breeze'];
 
         addSyntaxMode(299, {
-            name: 'include',
+            name: 'icons',
             type: 'substition',
             entries: [{
                 match: new RegExp('\\{\\{(' + _icon_list.join('|') + ')>'),
@@ -1059,6 +1059,64 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             entries: [{match: '<MATH>', style: 'tag', lang: 'latex'}],
             patterns: [{match: '</MATH>', style: 'tag', exit: true}]
         });
+
+    }
+
+    /* Plugin changes */
+
+    if (parserConfig.plugins.indexOf('changes') !== -1) {
+
+        addSyntaxMode(50, {
+            name: 'changes',
+            type: 'substition',
+            entries: [{
+                match: '{{changes>',
+                style: 'tag'
+            }],
+            token: function(stream, state) {
+                var style;
+                if (stream.match(/^\}\}/)) {
+                    state.current = state.stack.pop();
+                    style = 'tag';
+                } else if (stream.match(/[^&]/)) {
+                    style = 'keyword';
+                    stream.next();
+                }
+                return tokenStyles(state, style);
+            }
+        });
+
+    }
+
+    /* Plugin adhoctags */
+
+    if (parserConfig.plugins.indexOf('adhoctags') !== -1) {
+
+        var _adhoctags = [
+            'b', 'i', 's', 'u', 'article', 'header', 'footer', 'address',
+            'cite', 'time', 'dfn', 'kbd', 'samp', 'var', 'bdi', 'bdo', 'dl',
+            'dd', 'summary', 'div', 'aside', 'section', 'figure', 'figcaption',
+            'q', 'abbr', 'mark', 'strong', 'small', 'em', 'h1', 'h2', 'h3',
+            'h4', 'h5', 'h6', 'a', 'dt', 'details', 'span', 'pre'
+        ];
+
+        for (i=0; i<_adhoctags.length; i += 1) {
+            addSyntaxMode(195, {
+                name: 'adhoctags_' + _adhoctags[i],
+                type: 'formatting',
+                allowedTypes: ['container', 'formatting', 'baseonly',
+                                'substition', 'protected', 'disabled'],
+                entries: [{
+                    match: new RegExp('<' + _adhoctags[i] + '(.*?)>'),
+                    style: 'tag'
+                }],
+                patterns: [{
+                    match: '</' + _adhoctags[i] + '>',
+                    style: 'tag',
+                    exit: true
+                }]
+            });
+        }
 
     }
 
