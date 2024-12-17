@@ -634,10 +634,9 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                 'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _bootswrapper_tags[i] + ' (.*?)>'),
-                    style: 'tag'
-                }, {
-                    match: '<' + _bootswrapper_tags[i] + '>',
+                    match: new RegExp(
+                        '<' + _bootswrapper_tags[i] + '(\s+[^>]*)?>'
+                    ),
                     style: 'tag'
                 }],
                 patterns: [{
@@ -659,7 +658,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             type: 'formatting',
             allowedTypes: ['container', 'substition', 'protected',
                            'disabled', 'formatting'],
-            entries: [{match: /<cite(.*?>)/, style: 'tag'}],
+            entries: [{match: '<cite>', style: 'tag'}],
             patterns: [{match: '</cite>', exit: true, style: 'tag'}]
         });
 
@@ -668,7 +667,16 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             type: 'container',
             allowedTypes: ['container', 'substition', 'protected',
                            'disabled', 'formatting'],
-            entries: [{match: /<blockquote(.*?>)/, style: 'tag'}],
+            entries: [{match: '<blockquote>', style: 'tag'}],
+            patterns: [{match: '</blockquote>', exit: true, style: 'tag'}]
+        });
+
+        addSyntaxMode(123, {
+            name: 'blockquote-block',  // 123 (duplication to match nested tag)
+            type: 'container',
+            allowedTypes: ['container', 'substition', 'protected',
+                           'disabled', 'formatting'],
+            entries: [{match: '<blockquote>', style: 'tag'}],
             patterns: [{match: '</blockquote>', exit: true, style: 'tag'}]
         });
 
@@ -676,9 +684,11 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             name: 'blockquote-inline',  // 123
             type: 'formatting',
             allowedTypes: ['substition', 'formatting', 'disabled'],
-            entries: [{match: /<b(.*?>)/, style: 'tag'}],
-            patterns: [{match: '</b>', exit: true, style: 'tag'}]
+            entries: [{match: '<q>', style: 'tag'}],
+            patterns: [{match: '</q>', exit: true, style: 'tag'}]
         });
+
+
 
     }
 
@@ -859,7 +869,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             name: 'fontsize2',
             type: 'formatting',
             allowedTypes: ['formatting', 'substition', 'disabled'],
-            entries: [{match: /<fs(.*?)>/, style: 'tag'}],
+            entries: [{match: /<fs(\s+[^>]*)?>/, style: 'tag'}],
             patterns: [{match: '</fs>', exit: true, style: 'tag'}]
         });
     }
@@ -871,7 +881,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             name: 'color',
             type: 'formatting',
             allowedTypes: ['formatting', 'substition', 'disabled'],
-            entries: [{match: /<color(.*?)>/, style: 'tag'}],
+            entries: [{match: /<color(\s+[^>]*)?>/, style: 'tag'}],
             patterns: [{match: '</color>', exit: true, style: 'tag'}]
         });
     }
@@ -1110,10 +1120,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _adhoctags[i] + ' (.*?)>'),
-                    style: 'tag'
-                },{
-                    match: '<' + _adhoctags[i] + '>',
+                    match: new RegExp('<' + _adhoctags[i] + '(\s+[^>]*)?>'),
                     style: 'tag'
                 }],
                 patterns: [{
@@ -1123,6 +1130,52 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 }]
             });
         }
+
+        addSyntaxMode(195, {
+            name: 'adhoctags_div',  // duplication to handle nested tags
+            type: 'formatting',
+            allowedTypes: ['container', 'formatting', 'baseonly',
+                           'substition', 'protected', 'disabled'],
+            entries: [{
+                match: /<div(\s+[^>]*)?>/,
+                style: 'tag'
+            }],
+            patterns: [{
+                match: '</div>',
+                style: 'tag',
+                exit: true
+            }]
+        });
+
+        addSyntaxMode(195, {
+            name: 'adhoctags_span',  // duplication to handle nested tags
+            type: 'formatting',
+            allowedTypes: ['container', 'formatting', 'baseonly',
+                           'substition', 'protected', 'disabled'],
+            entries: [{
+                match: /<span(\s+[^>]*)?>/,
+                style: 'tag'
+            }],
+            patterns: [{
+                match: '</span>',
+                style: 'tag',
+                exit: true
+            }]
+        });
+
+    }
+
+    /* Plugin comment */
+
+    if (parserConfig.plugins.indexOf('comment') !== -1) {
+
+        addSyntaxMode(321, {
+            name: 'plugin_comment',
+            type: 'substition',
+            entries: [{match: '/*'}],
+            patterns: [{match: '*/', exit: true}],
+            style: 'comment'
+        });
 
     }
 
