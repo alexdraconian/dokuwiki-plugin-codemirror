@@ -635,7 +635,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                                 'substition', 'protected', 'disabled'],
                 entries: [{
                     match: new RegExp(
-                        '<' + _bootswrapper_tags[i] + '(\s+[^>]*)?>'
+                        '<' + _bootswrapper_tags[i] + '(\\s+[^>]*)?>'
                     ),
                     style: 'tag'
                 }],
@@ -1120,7 +1120,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _adhoctags[i] + '(\s+[^>]*)?>'),
+                    match: new RegExp('<' + _adhoctags[i] + '(\\s+[^>]*)?>'),
                     style: 'tag'
                 }],
                 patterns: [{
