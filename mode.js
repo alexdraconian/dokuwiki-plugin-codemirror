@@ -54,7 +54,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                     null,
                 linkParam: state.linkParam,
                 linkTitle: state.linkTitle,
-                linkFlag: state.linkFlag,
+                temp: {},
                 stack: state.stack.slice(0),
             };
         },
@@ -82,7 +82,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 innerState: null,
                 linkParam: null,
                 linkTitle: false,
-                linkFlag: false,
+                temp: {},
                 stack: [],
             };
         },
@@ -567,11 +567,11 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 var style;
                 if (stream.match(/^\}\}/)) {
                     state.current = state.stack.pop();
-                    state.linkFlag = false;
+                    state.temp.is_link = false;
                     style = 'tag';
                 } else if (stream.match('&')) {
-                    state.linkFlag = true;
-                } else if (state.linkFlag) {
+                    state.temp.is_link = true;
+                } else if (state.temp.is_link) {
                     stream.next();
                     style = 'keyword';
                 } else {
@@ -618,6 +618,33 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             style: 'meta'
         });
 
+        var bootswrapperAttrMode = {
+            // Dummy mode for attribute parsing.
+            name: 'bootswrapper_attr',
+            type: 'formatting',
+            allowedTypes: ['container', 'formatting', 'baseonly',
+                           'substition', 'protected', 'disabled'],
+            entries: [{
+                match: /./,
+                style: 'string'
+            }],
+            token: function(stream, state) {
+                var style;
+                if (stream.match('>')) {
+                    state.current = state.stack.pop();
+                    style = 'tag';
+                } else if (stream.match(/".+?"/)) {
+                    style = 'string';
+                } else if (stream.match('=')) {
+                    style = 'operator';
+                } else {
+                    stream.next();
+                    style = 'attribute';
+                }
+                return tokenStyles(state, style);
+            }
+        };
+
         var _bootswrapper_tags = [
             'grid', 'panelbody', 'column', 'hidden', 'image', 'invisible',
             'collapse', 'jumbotron', 'carousel', 'label', 'caption', 'lead',
@@ -634,10 +661,9 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                 'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp(
-                        '<' + _bootswrapper_tags[i] + '(\\s+[^>]*)?>'
-                    ),
-                    style: 'tag'
+                    match: new RegExp('<' + _bootswrapper_tags[i]),
+                    style: 'tag',
+                    push: bootswrapperAttrMode
                 }],
                 patterns: [{
                     match: '</' + _bootswrapper_tags[i] + '>',
@@ -912,27 +938,27 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             name: 'vshare',
             type: 'substition',
             entries: [{
-                match: new RegExp('\\{\\{(' + _vshare_list.join('|') + ')>'),
+                match: new RegExp('\\{\\{ ?(' + _vshare_list.join('|') + ')>'),
                 style: 'tag'
             }],
             token: function(stream, state) {
                 var style;
                 if (stream.match(/^\}\}/)) {
                     state.current = state.stack.pop();
-                    state.linkFlag = false;
-                    state.linkTitle = false;
+                    state.temp.is_link = false;
+                    state.is_string = false;
                     style = 'tag';
                 } else if (stream.match('|')) {
-                    state.linkFlag = false;
-                    state.linkTitle = true;
-                } else if (!state.linkTitle && stream.match(/[&?]/)) {
-                    state.linkFlag = true;
-                } else if (state.linkFlag) {
+                    state.temp.is_link = false;
+                    state.is_string = true;
+                } else if (!state.is_string && stream.match(/[&?]/)) {
+                    state.temp.is_link = true;
+                } else if (state.temp.is_link) {
                     stream.next();
                     style = 'keyword';
                 } else {
                     stream.next();
-                    style = state.linkTitle ? 'string' : 'link';
+                    style = state.is_string ? 'string' : 'link';
                 }
                 return tokenStyles(state, style);
             }
@@ -958,11 +984,12 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 var style;
                 if (stream.match(/^\}\}/)) {
                     state.current = state.stack.pop();
-                    state.linkFlag = false;
+                    state.temp.is_attr = false;
                     style = 'tag';
-                } else if (stream.match('&')) {
-                    state.linkFlag = true;
-                } else if (state.linkFlag) {
+                } else if (stream.match(/&|\?/)) {
+                    state.temp.is_attr = true;
+                    style = 'operator';
+                } else if (state.temp.is_attr) {
                     stream.next();
                     style = 'keyword';
                 } else {
@@ -1037,11 +1064,11 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 var style;
                 if (stream.match(/^~~/)) {
                     state.current = state.stack.pop();
-                    state.linkFlag = false;
+                    state.temp.is_link = false;
                     style = 'meta';
                 } else if (stream.match('!')) {
-                    state.linkflag = true;
-                } else if (state.linkflag) {
+                    state.temp.is_link = true;
+                } else if (state.temp.is_link) {
                     stream.next();
                     style = 'string';
                 } else if (stream.match(_orphanswanted_keywords)) {
@@ -1091,8 +1118,12 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 if (stream.match(/^\}\}/)) {
                     state.current = state.stack.pop();
                     style = 'tag';
-                } else if (stream.match(/[^&]/)) {
-                    style = 'keyword';
+                } else if (stream.match(/&|=/)) {
+                    style = 'operator';
+                } else if (stream.match(/[^&=]+?(?==)/)) {
+                    style = 'attribute';
+                } else {
+                    style = 'string';
                     stream.next();
                 }
                 return tokenStyles(state, style);
@@ -1104,6 +1135,46 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
     /* Plugin adhoctags */
 
     if (parserConfig.plugins.indexOf('adhoctags') !== -1) {
+
+        var adHocTagsAttrMode = {
+            // Dummy mode for attribute parsing.
+            name: 'adhoctags_attr',
+            type: 'formatting',
+            allowedTypes: ['container', 'formatting', 'baseonly',
+                           'substition', 'protected', 'disabled'],
+            entries: [{
+                match: /./,
+                style: 'string'
+            }],
+            token: function(stream, state) {
+                var style;
+                if (stream.match('>')) {
+                    state.current = state.stack.pop();
+                    state.temp.is_ext_attr = false;
+                    style = 'tag';
+                } else if (stream.match(']')) {
+                    state.temp.is_ext_attr = false;
+                    style = 'bracket';
+                } else if (stream.match('[')) {
+                    state.temp.is_ext_attr = true;
+                    style = 'bracket';
+                } else if (
+                    state.temp.is_ext_attr &&
+                    stream.match(/[^\]]+(?==)/)
+                ) {
+                    style = 'attribute';
+                } else if (state.temp.is_ext_attr && stream.match('=')) {
+                    style = 'operator';
+                } else if (state.temp.is_ext_attr) {
+                    stream.next();
+                    style = 'string';
+                } else {
+                    stream.next();
+                    style = 'attribute';
+                }
+                return tokenStyles(state, style);
+            }
+        };
 
         var _adhoctags = [
             'b', 'i', 's', 'u', 'article', 'header', 'footer', 'address',
@@ -1120,47 +1191,48 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _adhoctags[i] + '(\\s+[^>]*)?>'),
-                    style: 'tag'
+                    match: new RegExp('<' + _adhoctags[i]),
+                    style: 'tag',
+                    push: adHocTagsAttrMode  // Push attribute parsing mode
                 }],
                 patterns: [{
                     match: '</' + _adhoctags[i] + '>',
-                    style: 'tag',
-                    exit: true
+                    exit: true,
+                    style: 'tag'
                 }]
             });
         }
 
         addSyntaxMode(195, {
-            name: 'adhoctags_div',  // duplication to handle nested tags
+            // duplication to handle nested tags
+            name: 'adhoctags_div',
             type: 'formatting',
             allowedTypes: ['container', 'formatting', 'baseonly',
                            'substition', 'protected', 'disabled'],
             entries: [{
-                match: /<div(\s+[^>]*)?>/,
-                style: 'tag'
-            }],
-            patterns: [{
-                match: '</div>',
+                match: new RegExp('<div'),
                 style: 'tag',
-                exit: true
-            }]
+                push: adHocTagsAttrMode
+            }],
+            patterns: [
+                {match: '</div>', exit: true, style: 'tag'}
+            ]
         });
 
         addSyntaxMode(195, {
-            name: 'adhoctags_span',  // duplication to handle nested tags
+            // duplication to handle nested tags
+            name: 'adhoctags_span',
             type: 'formatting',
             allowedTypes: ['container', 'formatting', 'baseonly',
                            'substition', 'protected', 'disabled'],
             entries: [{
-                match: /<span(\s+[^>]*)?>/,
-                style: 'tag'
-            }],
-            patterns: [{
-                match: '</span>',
+                match: new RegExp('<span'),
                 style: 'tag',
-                exit: true
-            }]
+                push: adHocTagsAttrMode
+            }],
+            patterns: [
+                {match: '</span>', exit: true, style: 'tag'}
+            ]
         });
 
     }
@@ -1385,6 +1457,14 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                     if (pattern.lang) {
                         enterInnerMode(state, pattern.lang);
                     }
+                    if (pattern.push) {
+                        pattern.push.allowedModes =
+                            [ pattern.push ].concat(
+                                state.current.allowedModes
+                            );
+                        state.stack.push(state.current);
+                        state.current = pattern.push;
+                    }
                 }
             }
         }
@@ -1397,6 +1477,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         } else {
             return tokenStyles(state);
         }
+
     }
 
     function tokenStyles(state, style) {
