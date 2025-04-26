@@ -661,7 +661,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                 'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _bootswrapper_tags[i] + ' ?(?=>)'),
+                    match: new RegExp('<' + _bootswrapper_tags[i] + '(?= .+?>|>)'),
                     style: 'tag',
                     push: bootswrapperAttrMode
                 }],
