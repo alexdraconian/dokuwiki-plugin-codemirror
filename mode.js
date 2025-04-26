@@ -391,7 +391,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         addSyntaxMode(290, {
             name: 'camelcaselink',
             type: 'substition',
-            emtry: [{
+            entry: [{
                 behind: /\B$/,
                 match: /^[A-Z]+[a-z]+[A-Z][A-Za-z]*\b/,
                 exit: true,
@@ -654,7 +654,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             'accordion', 'affix', 'alert', 'badge', 'button'
         ];
 
-        for (i=0; i<_bootswrapper_tags.length; i += 1) {
+        for (i = 0; i<_bootswrapper_tags.length; i += 1) {
             addSyntaxMode(195, {
                 name: 'bootswrapper_' + _bootswrapper_tags[i],
                 type: 'formatting',
@@ -1185,19 +1185,19 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             'b', 'i', 's', 'u', 'a'
         ];
 
-        for (i=0; i<_adhoctags.length; i += 1) {
+        for (i = 0; i<_adhoctags.length; i += 1) {
             addSyntaxMode(195, {
                 name: 'adhoctags_' + _adhoctags[i],
                 type: 'formatting',
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _adhoctags[i] + ' ?(?=>)'),
+                    match: new RegExp('<' + _adhoctags[i] + '(?= .+?>|>)'),
                     style: 'tag',
                     push: adHocTagsAttrMode  // Push attribute parsing mode
                 }],
                 patterns: [{
-                    match: '</' + _adhoctags[i] + '>',
+                    match: '</' + _adhoctags[i] + '(?= .+?>|>)',
                     exit: true,
                     style: 'tag'
                 }]
@@ -1211,7 +1211,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             allowedTypes: ['container', 'formatting', 'baseonly',
                            'substition', 'protected', 'disabled'],
             entries: [{
-                match: new RegExp('<div ?(?=>)'),
+                match: new RegExp('<div(?= .+?>|>)'),
                 style: 'tag',
                 push: adHocTagsAttrMode
             }],
@@ -1227,7 +1227,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             allowedTypes: ['container', 'formatting', 'baseonly',
                            'substition', 'protected', 'disabled'],
             entries: [{
-                match: new RegExp('<span ?(?=>)'),
+                match: new RegExp('<span(?= .+?>|>)'),
                 style: 'tag',
                 push: adHocTagsAttrMode
             }],
@@ -1300,7 +1300,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         }
     );
 
-    for (i=0; i < sorted_key.length; i += 1) {
+    for (i = 0; i < sorted_key.length; i += 1) {
         dokuModes = dokuModes.concat(syntaxModes[sorted_key[i]]);
     }
 
