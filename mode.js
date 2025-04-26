@@ -661,7 +661,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                 'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _bootswrapper_tags[i]),
+                    match: new RegExp('<' + _bootswrapper_tags[i] + ' ?(?=>)'),
                     style: 'tag',
                     push: bootswrapperAttrMode
                 }],
@@ -1177,11 +1177,12 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
         };
 
         var _adhoctags = [
-            'b', 'i', 's', 'u', 'article', 'header', 'footer', 'address',
+            'article', 'header', 'footer', 'address',
             'cite', 'time', 'dfn', 'kbd', 'samp', 'var', 'bdi', 'bdo', 'dl',
             'dd', 'summary', 'div', 'aside', 'section', 'figure', 'figcaption',
             'q', 'abbr', 'mark', 'strong', 'small', 'em', 'h1', 'h2', 'h3',
-            'h4', 'h5', 'h6', 'a', 'dt', 'details', 'span', 'pre'
+            'h4', 'h5', 'h6', 'dt', 'details', 'span', 'pre',
+            'b', 'i', 's', 'u', 'a'
         ];
 
         for (i=0; i<_adhoctags.length; i += 1) {
@@ -1191,7 +1192,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
                 allowedTypes: ['container', 'formatting', 'baseonly',
                                'substition', 'protected', 'disabled'],
                 entries: [{
-                    match: new RegExp('<' + _adhoctags[i]),
+                    match: new RegExp('<' + _adhoctags[i] + ' ?(?=>)'),
                     style: 'tag',
                     push: adHocTagsAttrMode  // Push attribute parsing mode
                 }],
@@ -1210,7 +1211,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             allowedTypes: ['container', 'formatting', 'baseonly',
                            'substition', 'protected', 'disabled'],
             entries: [{
-                match: new RegExp('<div'),
+                match: new RegExp('<div ?(?=>)'),
                 style: 'tag',
                 push: adHocTagsAttrMode
             }],
@@ -1226,7 +1227,7 @@ CodeMirror.defineMode('doku', function(config, parserConfig) {
             allowedTypes: ['container', 'formatting', 'baseonly',
                            'substition', 'protected', 'disabled'],
             entries: [{
-                match: new RegExp('<span'),
+                match: new RegExp('<span ?(?=>)'),
                 style: 'tag',
                 push: adHocTagsAttrMode
             }],
